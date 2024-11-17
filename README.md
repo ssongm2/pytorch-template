@@ -44,9 +44,9 @@ PyTorch deep learning project made easy.
 * 더욱 편리한 파라미터 조정 위해 커스터마이징 가능한 command line options
 * checkpoint 저장/다시 시작 기능
 * 빠른 개발을 위한 추상 클래스 제공
-  *BaseTrainer: 체크포인트 저장/다시 시작, 학습 과정 logging 등 수행
-  *BaseDataLoader: 배치 생성, 데이터 셔플, 검증 데이터 분할 수행
-  *BaseModel: 기본 모델 요약 제공
+  * BaseTrainer: 체크포인트 저장/다시 시작, 학습 과정 logging 등 수행
+  * BaseDataLoader: 배치 생성, 데이터 셔플, 검증 데이터 분할 수행
+  * BaseModel: 기본 모델 요약 제공
 
 ## Folder Structure
   ```
@@ -153,7 +153,7 @@ Config files are in `.json` format:
 }
 ```
 
-Add addional configurations if you need.
+Add additional configurations if you need.
 
 ### Using config files
 config file에서 학습 설정 지정 후, 아래 명령어 수행
