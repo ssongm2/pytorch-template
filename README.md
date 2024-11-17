@@ -39,14 +39,14 @@ PyTorch deep learning project made easy.
 * tensorboard >= 1.14 (see [Tensorboard Visualization](#tensorboard-visualization))
 
 ## Features
-* Clear folder structure which is suitable for many deep learning projects.
-* `.json` config file support for convenient parameter tuning.
-* Customizable command line options for more convenient parameter tuning.
-* Checkpoint saving and resuming.
-* Abstract base classes for faster development:
-  * `BaseTrainer` handles checkpoint saving/resuming, training process logging, and more.
-  * `BaseDataLoader` handles batch generation, data shuffling, and validation data splitting.
-  * `BaseModel` provides basic model summary.
+* 딥러닝 프로젝트에 적용하기 위한 폴더 구조 정의
+* CONFIG.json file -> 파라미터 조정의 편리성 위한 파일
+* 더욱 편리한 파라미터 조정 위해 커스터마이징 가능한 command line options
+* checkpoint 저장/다시 시작 기능
+* 빠른 개발을 위한 추상 클래스 제공
+  *BaseTrainer: 체크포인트 저장/다시 시작, 학습 과정 logging 등 수행
+  *BaseDataLoader: 배치 생성, 데이터 셔플, 검증 데이터 분할 수행
+  *BaseModel: 기본 모델 요약 제공
 
 ## Folder Structure
   ```
@@ -93,61 +93,62 @@ PyTorch deep learning project made easy.
   ```
 
 ## Usage
-The code in this repo is an MNIST example of the template.
-Try `python train.py -c config.json` to run code.
+현재 repo는 MNIST 예시로 사용한 template
+코드 실행은 'python train.py -c config.json' 명령어 입력
+
 
 ### Config file format
 Config files are in `.json` format:
 ```javascript
 {
-  "name": "Mnist_LeNet",        // training session name
-  "n_gpu": 1,                   // number of GPUs to use for training.
+  "name": "Mnist_LeNet",        // 학습 세션 이름
+  "n_gpu": 1,                   // 학습에 사용할 gpu num
   
   "arch": {
-    "type": "MnistModel",       // name of model architecture to train
+    "type": "MnistModel",       // 학습 모델 아키텍처 이름
     "args": {
 
     }                
   },
   "data_loader": {
-    "type": "MnistDataLoader",         // selecting data loader
+    "type": "MnistDataLoader",         // 데이터 로더 선택
     "args":{
-      "data_dir": "data/",             // dataset path
-      "batch_size": 64,                // batch size
-      "shuffle": true,                 // shuffle training data before splitting
-      "validation_split": 0.1          // size of validation dataset. float(portion) or int(number of samples)
-      "num_workers": 2,                // number of cpu processes to be used for data loading
+      "data_dir": "data/",             // 데이터셋 경로
+      "batch_size": 64,                // 배치 사이즈
+      "shuffle": true,                 // 학습 데이터 셔플(validation split 전)
+      "validation_split": 0.1          // validation set 비율
+      "num_workers": 2,                // 데이터 로딩에 사용할 cpu num(2개면 병렬)
     }
   },
   "optimizer": {
     "type": "Adam",
     "args":{
       "lr": 0.001,                     // learning rate
-      "weight_decay": 0,               // (optional) weight decay
-      "amsgrad": true
+      "weight_decay": 0,               // 가중치 감쇠 (option) -> 가중치 지나치게 커지는 것 방지하는 정규화, 과적합 방지
+      "amsgrad": true		       // Adam의 변형인 AMSGrade 활성화 -> 학습 안정성 높임
     }
   },
-  "loss": "nll_loss",                  // loss
+  "loss": "nll_loss",                  // loss -> negative log lkelihood loss: 주로 이진 분류에서 사용
   "metrics": [
-    "accuracy", "top_k_acc"            // list of metrics to evaluate
+    "accuracy", "top_k_acc"            // 평가할 metric 리스트
   ],                         
   "lr_scheduler": {
-    "type": "StepLR",                  // learning rate scheduler
-    "args":{
-      "step_size": 50,          
-      "gamma": 0.1
+    "type": "StepLR",                  // learning rate 스케줄러 -> StepLR: 일정 step size마다 lr 감소하는 방법, 가중치 업데이트 작게 하면 모델이 안정적으로 최적화 가능
+    "args":{			       
+      "step_size": 50,                 // 50마다 lr 감소
+      "gamma": 0.1		       // lr 감소 비율 -> 0.1: 기존 lr의 10%로 줄임(0.1 -> 0.01 -> 0.001)
     }
   },
   "trainer": {
-    "epochs": 100,                     // number of training epochs
-    "save_dir": "saved/",              // checkpoints are saved in save_dir/models/name
-    "save_freq": 1,                    // save checkpoints every save_freq epochs
-    "verbosity": 2,                    // 0: quiet, 1: per epoch, 2: full
+    "epochs": 100,                     // 학습 에폭 num
+    "save_dir": "saved/",              // 체크포인트 저장 경로는 save_dir/models/name
+    "save_freq": 1,                    // 체크포인트 저장 주기 -> 1: 1에폭마다 체크포인트 save
+    "verbosity": 2,                    // 로그 출력 수준 -> 0: quiet(최종 결과만), 1: 에폭마다, 2: 상세 출력(배치단위 loss, lr 변화 등)
   
-    "monitor": "min val_loss"          // mode and metric for model performance monitoring. set 'off' to disable.
-    "early_stop": 10	                 // number of epochs to wait before early stop. set 0 to disable.
+    "monitor": "min val_loss"          // 모델 성능 평가할 metric, 최적화 방향 지정 -> off: 비활성화, min val_loss: val_loss가 작아지는 방향으로 최적화
+    "early_stop": 10	               // early stopping 대기 에폭 수 -> 0: 비활성화, 10: 10 에폭동안 개선 없으면 종료
   
-    "tensorboard": true,               // enable tensorboard visualization
+    "tensorboard": true,               // tensorboard 시각화 유무
   }
 }
 ```
@@ -155,25 +156,26 @@ Config files are in `.json` format:
 Add addional configurations if you need.
 
 ### Using config files
-Modify the configurations in `.json` config files, then run:
+config file에서 학습 설정 지정 후, 아래 명령어 수행
 
   ```
   python train.py --config config.json
   ```
 
 ### Resuming from checkpoints
-You can resume from a previously saved checkpoint by:
+이전에 저장한 checkpoint에서 학습 재개하려면, 아래 명령어 수행
 
   ```
   python train.py --resume path/to/checkpoint
   ```
 
 ### Using Multiple GPU
-You can enable multi-GPU training by setting `n_gpu` argument of the config file to larger number.
-If configured to use smaller number of gpu than available, first n devices will be used by default.
-Specify indices of available GPUs by cuda environmental variable.
+config file에서 n_gpu 값으로 multi-GPU 활성화 가능
+- 사용 가능한 GPU보다 작은 수 설정하면, 첫번째부터 n개의 GPU 사용
+- 특정 GPU 선택하려면, CUDA_VISIBLE_DEVICES 설정 사용
+
   ```
-  python train.py --device 2,3 -c config.json
+  python train.py --device 2,3 -c config.json //GPU 장치 순서의 인덱스 번호로 2번과 3번 사용
   ```
   This is equivalent to
   ```
