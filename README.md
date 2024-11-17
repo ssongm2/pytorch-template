@@ -94,7 +94,7 @@ PyTorch deep learning project made easy.
 
 ## Usage
 현재 repo는 MNIST 예시로 사용한 template
-코드 실행은 'python train.py -c config.json' 명령어 입력
+코드 실행은 `python train.py -c config.json` 명령어 입력
 
 
 ### Config file format
@@ -185,7 +185,7 @@ config file에서 n_gpu 값으로 multi-GPU 활성화 가능
 ## Customization
 
 ### Project initialization
-template file로 새로운 프로젝트 디렉토리 만드려면, 'new_project.py' 사용, 아래 명령어 수행
+template file로 새로운 프로젝트 디렉토리 만드려면, `new_project.py` 사용, 아래 명령어 수행
  
  ```
 'python new_project.py ../NewProject' 
@@ -207,8 +207,8 @@ template file로 새로운 프로젝트 디렉토리 만드려면, 'new_project.
   ]
   ```
 
-- 'target'은 터미널에서 전달된 CLI flag를 덮어쓰기 위해 config dict의 특정 값에 접근할때 사용하는 key
-- lr option은 ('optimizer', 'args', 'lr'), 그 이유는 'config['optimizer']['args']['lr']'가 learning rate를 가리키기 때문
+- `target`은 터미널에서 전달된 CLI flag를 덮어쓰기 위해 config dict의 특정 값에 접근할때 사용하는 key
+- lr option은 ('optimizer', 'args', 'lr'), 그 이유는 `config['optimizer']['args']['lr']`가 learning rate를 가리키기 때문
 
 실행 예시: config에서 주어진 설정 기반으로 학습하지만, batch size만 수정해서 256으로 변경
 ```
@@ -239,7 +239,7 @@ train.py -c config.json --bs 256
   ```
 * **Example**
 
-  MNIST data의 로딩 예시는 'data_loader/data_loaders.py'
+  MNIST data의 로딩 예시는 `data_loader/data_loaders.py`
 
 ### Trainer
 * **Writing your own trainer**
@@ -251,14 +251,14 @@ train.py -c config.json --bs 256
     * Checkpoint 저장
     * Checkpoint 재개
     * 현재 가장 좋은 성능 저장 위해 monitoring, early stopping 지원
-      * config의 'monitor'가 'max val_accuracy'면, validation accuracy가 최고 성능으로 업데이트 될때마다 **model_best.pth**로 checkpoint 저장
-      * config의 'early_stop'이 설정되어 있으면, 지정된 에폭 동안 성능 개선 없을 때 학습 자동 종료, 비활성화하려면 'early_stop'을 '0'으로 지정하거나, config에서 해당 옵션 삭제
+      * config의 `monitor`가 `max val_accuracy`면, validation accuracy가 최고 성능으로 업데이트 될때마다 **model_best.pth**로 checkpoint 저장
+      * config의 `early_stop`이 설정되어 있으면, 지정된 에폭 동안 성능 개선 없을 때 학습 자동 종료, 비활성화하려면 `early_stop`을 `0`으로 지정하거나, config에서 해당 옵션 삭제
 
 3. **추상 methods 구현**
 
-    'trainer/train.py'에서 구현
-    (필수)학습 과정 정의 '_train_epoch()'
-    (옵션)검증 과정 정의 '_valid_epoch()'
+    `trainer/train.py`에서 구현
+    (필수)학습 과정 정의 `_train_epoch()`
+    (옵션)검증 과정 정의 `_valid_epoch()`
 
 * **Example**
 
@@ -266,8 +266,8 @@ train.py -c config.json --bs 256
 
 * **Iteration-based training**
 
-  `Trainer.__init__`은 옵션으로 'len_epoch' 받을 수 있음
-  - 'len_epoch': 각 에폭에서 처리할 배치(step) 개수 제어, 이를 통해 에폭 길이 고정하거나 조정
+  `Trainer.__init__`은 옵션으로 `len_epoch` 받을 수 있음
+  - `len_epoch`: 각 에폭에서 처리할 배치(step) 개수 제어, 이를 통해 에폭 길이 고정하거나 조정
 
 ### Model
 * **Writing your own model**
@@ -275,22 +275,22 @@ train.py -c config.json --bs 256
 1. **상속 `BaseModel`**
 
     `BaseModel`이 처리하는 것:
-    * 'torch.nn.Module'을 상속받은 클래스
+    * `torch.nn.Module`을 상속받은 클래스
     * `__str__`: 모델 출력 시, 학습 가능한 파라미터 개수 표시하도록 'print'함수 동작 수정.
 
 2. **추상 method 구현**
 
-    순전파 과정은 'forward()' 메서드 구현
+    순전파 과정은 `forward()` 메서드 구현
 
 * **Example**
 
-  LeNet 예시는 'model/model.py'
+  LeNet 예시는 `model/model.py`
 
 ### Loss
-손실 함수는 'model/loss.py'에서 구현 가능, config file의 'loss' 항목에 해당 손실 함수 이름 지정하여 사용 가능
+손실 함수는 `model/loss.py`에서 구현 가능, config file의 `loss` 항목에 해당 손실 함수 이름 지정하여 사용 가능
 
 ### Metrics
-Metric 함수는 'model/metric.py'에 위치
+Metric 함수는 `model/metric.py`에 위치
 
 multiple metric 모니터링 하려면, config file에서 아래처럼 수정: 
   ```json
@@ -298,7 +298,7 @@ multiple metric 모니터링 하려면, config file에서 아래처럼 수정:
   ```
 
 ### Additional logging
-학습 중에 추가 로그 정보 원하면, _train_epoch()에서 로깅 데이터를 'log' 딕셔너리에 병합, 아래 참고:
+학습 중에 추가 로그 정보 원하면, _train_epoch()에서 로깅 데이터를 `log` 딕셔너리에 병합, 아래 참고:
 
   ```python
   additional_log = {"gradient_norm": g, "sensitivity": s} #추가 로그 정보
@@ -307,15 +307,16 @@ multiple metric 모니터링 하려면, config file에서 아래처럼 수정:
   ```
 
 ### Testing
-'test.py'로 실행해서 테스트 가능, '--resume' 옵션 사용해 지정된 checkpoint 경로를 전달
+`test.py`로 실행해서 테스트 가능, `--resume` 옵션 사용해 지정된 checkpoint 경로를 전달
 
 ### Validation data
 data loader에서 validation data 분할하려면, 
-- 'BaseDataLoader.split_validation()' 호출
+- `BaseDataLoader.split_validation()` 호출
 - 그럼, config file에서 지정한 validation size에 따라 validation data loader 반환
-- validation_split 옵션: ratio (0.0 ~ 1.0), sample num (0 ~ total num)
+- `validation_split` 옵션: ratio (0.0 ~ 1.0), sample num (0 ~ total num)
 
 **Note**: the `split_validation()`은 원본 데이터 로더를 수정함
+
 **Note**: config file에서 `"validation_split"`이 '0'으로 설정하면, split_validation은 None 반환
 
 ### Checkpoints
@@ -324,7 +325,7 @@ config files에서 학습 세션 이름 지정 가능:
   "name": "MNIST_LeNet",
   ```
 
-- checkpoints는 'save_dir/name/timestamp/checkpoint_epoch_n'에 저장, timestamp: 저장 시각(mmdd_HHMMSS -> 월,일,시,분,초)
+- checkpoints는 `save_dir/name/timestamp/checkpoint_epoch_n`에 저장, timestamp: 저장 시각(mmdd_HHMMSS -> 월,일,시,분,초)
 - config file의 copy도 같은 폴더에 저장
 
 **Note**: checkpoints 포함 정보:
@@ -340,11 +341,11 @@ config files에서 학습 세션 이름 지정 가능:
   ```
 
 ### Tensorboard Visualization
-Tensorboard 시각화 지원 ('torch.utils.tensorboard' 또는 [TensorboardX](https://github.com/lanpa/tensorboardX) 사용)
+Tensorboard 시각화 지원 (`torch.utils.tensorboard` 또는 [TensorboardX](https://github.com/lanpa/tensorboardX) 사용)
 
 1. **Install**
 
-    - pytorch 1.1 이상이면, tensorboard 설치 by 'pip install tensorboard>=1.14.0'.
+    - pytorch 1.1 이상이면, tensorboard 설치 by `pip install tensorboard>=1.14.0`.
     - pytorch 1.1 미만이면, 가이드 따라 설치 [TensorboardX](https://github.com/lanpa/tensorboardX).
 
 3. **Run training** 
@@ -358,8 +359,8 @@ Tensorboard 시각화 지원 ('torch.utils.tensorboard' 또는 [TensorboardX](ht
 4. **Open Tensorboard server** 
 
     1. project의 root 디렉토리에서 다음 명령어 실행:
-   	'tensorboard --logdir saved/log/'
-    2. 서버 열리면, 브라우저에서 'http://localhost:6006' 접속해서 tensorboard 확인
+   	`tensorboard --logdir saved/log/`
+    2. 서버 열리면, 브라우저에서 `http://localhost:6006` 접속해서 tensorboard 확인
        
 - 디폴트로 config file에 지정된 loss, metrics, input images, parameter의 히스토그램이 tensorboard에 기록
 - 추가 시각화 원하면, 'trainer._train_epoch'에서 다음과 같은 method 활용 가능
