@@ -185,193 +185,211 @@ config file에서 n_gpu 값으로 multi-GPU 활성화 가능
 ## Customization
 
 ### Project initialization
-Use the `new_project.py` script to make your new project directory with template files.
-`python new_project.py ../NewProject` then a new project folder named 'NewProject' will be made.
-This script will filter out unneccessary files like cache, git files or readme file. 
+template file로 새로운 프로젝트 디렉토리 만드려면, 'new_project.py' 사용, 아래 명령어 수행
+ 
+ ```
+'python new_project.py ../NewProject' 
+ ```
+실행하면, NewProject라는 이름의 새 프로젝트 폴더 생성
+불필요한 파일(캐시, git files, readme file)은 제외하고 template만 복사
 
 ### Custom CLI options
-
-Changing values of config file is a clean, safe and easy way of tuning hyperparameters. However, sometimes
-it is better to have command line options if some values need to be changed too often or quickly.
-
-This template uses the configurations stored in the json file by default, but by registering custom options as follows
-you can change some of them using CLI flags.
+- config.json 파일을 수정하는 것이 일반적으로 안전하고 쉽지만, 자주 바뀌는 값은 command line에서 수정하는 것이 편리
+- 현재 template은 JSON을 디폴트로 사용하지만, CLI flags에서 custom option 설정해서 사용자가 원하는 것으로 바꿀 수 있음 (CLI flags: 터미널에서 명령어 옵션으로 값 전달하는 방법)
 
   ```python
-  # simple class-like object having 3 attributes, `flags`, `type`, `target`.
+  # CustomArgs 객체를 flags, type, target 속성으로 정의
   CustomArgs = collections.namedtuple('CustomArgs', 'flags type target')
   options = [
       CustomArgs(['--lr', '--learning_rate'], type=float, target=('optimizer', 'args', 'lr')),
       CustomArgs(['--bs', '--batch_size'], type=int, target=('data_loader', 'args', 'batch_size'))
-      # options added here can be modified by command line flags.
+      # 여기 추가된 옵션은 CLI flags에서 수정 가능
   ]
   ```
-`target` argument should be sequence of keys, which are used to access that option in the config dict. In this example, `target` 
-for the learning rate option is `('optimizer', 'args', 'lr')` because `config['optimizer']['args']['lr']` points to the learning rate.
-`python train.py -c config.json --bs 256` runs training with options given in `config.json` except for the `batch size`
-which is increased to 256 by command line options.
 
+- 'target'은 터미널에서 전달된 CLI flag를 덮어쓰기 위해 config dict의 특정 값에 접근할때 사용하는 key
+- lr option은 ('optimizer', 'args', 'lr'), 그 이유는 'config['optimizer']['args']['lr']'가 learning rate를 가리키기 때문
+
+실행 예시: config에서 주어진 설정 기반으로 학습하지만, batch size만 수정해서 256으로 변경
+```
+train.py -c config.json --bs 256
+```
 
 ### Data Loader
 * **Writing your own data loader**
 
-1. **Inherit ```BaseDataLoader```**
+1. **상속 `BaseDataLoader`** 
 
-    `BaseDataLoader` is a subclass of `torch.utils.data.DataLoader`, you can use either of them.
+    `BaseDataLoader`는 torch.utils.data.DataLoader를 상속받은 클래스
 
-    `BaseDataLoader` handles:
-    * Generating next batch
-    * Data shuffling
-    * Generating validation data loader by calling
-    `BaseDataLoader.split_validation()`
+    `BaseDataLoader`가 처리하는 것:
+    * 다음 batch 생성
+    * 데이터 shuffling
+    * validation daata loader 생성, 아래 함수 호출
+      ```python
+      'BaseDataLoader.split_validation()'
+      ```
 
 * **DataLoader Usage**
 
-  `BaseDataLoader` is an iterator, to iterate through batches:
+  `BaseDataLoader`는 iterator이므로, 배치 돌려면 아래처럼 사용:
   ```python
   for batch_idx, (x_batch, y_batch) in data_loader:
       pass
   ```
 * **Example**
 
-  Please refer to `data_loader/data_loaders.py` for an MNIST data loading example.
+  MNIST data의 로딩 예시는 'data_loader/data_loaders.py'
 
 ### Trainer
 * **Writing your own trainer**
 
-1. **Inherit ```BaseTrainer```**
+1. **상속 `BaseTrainer`**
 
-    `BaseTrainer` handles:
-    * Training process logging
-    * Checkpoint saving
-    * Checkpoint resuming
-    * Reconfigurable performance monitoring for saving current best model, and early stop training.
-      * If config `monitor` is set to `max val_accuracy`, which means then the trainer will save a checkpoint `model_best.pth` when `validation accuracy` of epoch replaces current `maximum`.
-      * If config `early_stop` is set, training will be automatically terminated when model performance does not improve for given number of epochs. This feature can be turned off by passing 0 to the `early_stop` option, or just deleting the line of config.
+    `BaseTrainer`가 처리하는 것:
+    * 학습 과정 logging
+    * Checkpoint 저장
+    * Checkpoint 재개
+    * 현재 가장 좋은 성능 저장 위해 monitoring, early stopping 지원
+      * config의 'monitor'가 'max val_accuracy'면, validation accuracy가 최고 성능으로 업데이트 될때마다 **model_best.pth**로 checkpoint 저장
+      * config의 'early_stop'이 설정되어 있으면, 지정된 에폭 동안 성능 개선 없을 때 학습 자동 종료, 비활성화하려면 'early_stop'을 '0'으로 지정하거나, config에서 해당 옵션 삭제
 
-2. **Implementing abstract methods**
+3. **추상 methods 구현**
 
-    You need to implement `_train_epoch()` for your training process, if you need validation then you can implement `_valid_epoch()` as in `trainer/trainer.py`
+    'trainer/train.py'에서 구현
+    (필수)학습 과정 정의 '_train_epoch()'
+    (옵션)검증 과정 정의 '_valid_epoch()'
 
 * **Example**
 
-  Please refer to `trainer/trainer.py` for MNIST training.
+  MNIST training 예시는 `trainer/trainer.py`
 
 * **Iteration-based training**
 
-  `Trainer.__init__` takes an optional argument, `len_epoch` which controls number of batches(steps) in each epoch.
+  `Trainer.__init__`은 옵션으로 'len_epoch' 받을 수 있음
+  - 'len_epoch': 각 에폭에서 처리할 배치(step) 개수 제어, 이를 통해 에폭 길이 고정하거나 조정
 
 ### Model
 * **Writing your own model**
 
-1. **Inherit `BaseModel`**
+1. **상속 `BaseModel`**
 
-    `BaseModel` handles:
-    * Inherited from `torch.nn.Module`
-    * `__str__`: Modify native `print` function to prints the number of trainable parameters.
+    `BaseModel`이 처리하는 것:
+    * 'torch.nn.Module'을 상속받은 클래스
+    * `__str__`: 모델 출력 시, 학습 가능한 파라미터 개수 표시하도록 'print'함수 동작 수정.
 
-2. **Implementing abstract methods**
+2. **추상 method 구현**
 
-    Implement the foward pass method `forward()`
+    순전파 과정은 'forward()' 메서드 구현
 
 * **Example**
 
-  Please refer to `model/model.py` for a LeNet example.
+  LeNet 예시는 'model/model.py'
 
 ### Loss
-Custom loss functions can be implemented in 'model/loss.py'. Use them by changing the name given in "loss" in config file, to corresponding name.
+손실 함수는 'model/loss.py'에서 구현 가능, config file의 'loss' 항목에 해당 손실 함수 이름 지정하여 사용 가능
 
 ### Metrics
-Metric functions are located in 'model/metric.py'.
+Metric 함수는 'model/metric.py'에 위치
 
-You can monitor multiple metrics by providing a list in the configuration file, e.g.:
+multiple metric 모니터링 하려면, config file에서 아래처럼 수정: 
   ```json
   "metrics": ["accuracy", "top_k_acc"],
   ```
 
 ### Additional logging
-If you have additional information to be logged, in `_train_epoch()` of your trainer class, merge them with `log` as shown below before returning:
+학습 중에 추가 로그 정보 원하면, _train_epoch()에서 로깅 데이터를 'log' 딕셔너리에 병합, 아래 참고:
 
   ```python
-  additional_log = {"gradient_norm": g, "sensitivity": s}
+  additional_log = {"gradient_norm": g, "sensitivity": s} #추가 로그 정보
   log.update(additional_log)
   return log
   ```
 
 ### Testing
-You can test trained model by running `test.py` passing path to the trained checkpoint by `--resume` argument.
+'test.py'로 실행해서 테스트 가능, '--resume' 옵션 사용해 지정된 checkpoint 경로를 전달
 
 ### Validation data
-To split validation data from a data loader, call `BaseDataLoader.split_validation()`, then it will return a data loader for validation of size specified in your config file.
-The `validation_split` can be a ratio of validation set per total data(0.0 <= float < 1.0), or the number of samples (0 <= int < `n_total_samples`).
+data loader에서 validation data 분할하려면, 
+- 'BaseDataLoader.split_validation()' 호출
+- 그럼, config file에서 지정한 validation size에 따라 validation data loader 반환
+- validation_split 옵션: ratio (0.0 ~ 1.0), sample num (0 ~ total num)
 
-**Note**: the `split_validation()` method will modify the original data loader
-**Note**: `split_validation()` will return `None` if `"validation_split"` is set to `0`
+**Note**: the `split_validation()`은 원본 데이터 로더를 수정함
+**Note**: config file에서 `"validation_split"`이 '0'으로 설정하면, split_validation은 None 반환
 
 ### Checkpoints
-You can specify the name of the training session in config files:
+config files에서 학습 세션 이름 지정 가능:
   ```json
   "name": "MNIST_LeNet",
   ```
 
-The checkpoints will be saved in `save_dir/name/timestamp/checkpoint_epoch_n`, with timestamp in mmdd_HHMMSS format.
+- checkpoints는 'save_dir/name/timestamp/checkpoint_epoch_n'에 저장, timestamp: 저장 시각(mmdd_HHMMSS -> 월,일,시,분,초)
+- config file의 copy도 같은 폴더에 저장
 
-A copy of config file will be saved in the same folder.
-
-**Note**: checkpoints contain:
+**Note**: checkpoints 포함 정보:
   ```python
   {
-    'arch': arch,
-    'epoch': epoch,
-    'state_dict': self.model.state_dict(),
-    'optimizer': self.optimizer.state_dict(),
-    'monitor_best': self.mnt_best,
-    'config': self.config
+    'arch': arch, #모델 아키텍처
+    'epoch': epoch, #에폭 num
+    'state_dict': self.model.state_dict(), #모델 가중치
+    'optimizer': self.optimizer.state_dict(), #optimizer 상태
+    'monitor_best': self.mnt_best, #현재 최고 monitoring 값
+    'config': self.config #config file 설정 정보
   }
   ```
 
 ### Tensorboard Visualization
-This template supports Tensorboard visualization by using either  `torch.utils.tensorboard` or [TensorboardX](https://github.com/lanpa/tensorboardX).
+Tensorboard 시각화 지원 ('torch.utils.tensorboard' 또는 [TensorboardX](https://github.com/lanpa/tensorboardX) 사용)
 
 1. **Install**
 
-    If you are using pytorch 1.1 or higher, install tensorboard by 'pip install tensorboard>=1.14.0'.
+    - pytorch 1.1 이상이면, tensorboard 설치 by 'pip install tensorboard>=1.14.0'.
+    - pytorch 1.1 미만이면, 가이드 따라 설치 [TensorboardX](https://github.com/lanpa/tensorboardX).
 
-    Otherwise, you should install tensorboardx. Follow installation guide in [TensorboardX](https://github.com/lanpa/tensorboardX).
+3. **Run training** 
 
-2. **Run training** 
-
-    Make sure that `tensorboard` option in the config file is turned on.
+    config file에서 tensorboard 옵션 활성화
 
     ```
      "tensorboard" : true
     ```
 
-3. **Open Tensorboard server** 
+4. **Open Tensorboard server** 
 
-    Type `tensorboard --logdir saved/log/` at the project root, then server will open at `http://localhost:6006`
+    1. project의 root 디렉토리에서 다음 명령어 실행:
+   	'tensorboard --logdir saved/log/'
+    2. 서버 열리면, 브라우저에서 'http://localhost:6006' 접속해서 tensorboard 확인
+       
+- 디폴트로 config file에 지정된 loss, metrics, input images, parameter의 히스토그램이 tensorboard에 기록
+- 추가 시각화 원하면, 'trainer._train_epoch'에서 다음과 같은 method 활용 가능
+	- `add_scalar('tag', data)`: 스칼라 값 기록
+ 	- `add_image('tag', image)`: 이미지 데이터 기록
+- add_something()은 template에서 제공, 이는 `tensorboardX.SummaryWriter`과 `torch.utils.tensorboard.SummaryWriter`모듈의 wrapper로 작동.
 
-By default, values of loss and metrics specified in config file, input images, and histogram of model parameters will be logged.
-If you need more visualizations, use `add_scalar('tag', data)`, `add_image('tag', image)`, etc in the `trainer._train_epoch` method.
-`add_something()` methods in this template are basically wrappers for those of `tensorboardX.SummaryWriter` and `torch.utils.tensorboard.SummaryWriter` modules. 
-
-**Note**: You don't have to specify current steps, since `WriterTensorboard` class defined at `logger/visualization.py` will track current steps.
+**Note**: 현재 step을 지정할 필요 없음, `logger/visualization.py`에 정의된 'WriterTensorboard' 클래스가 step 자동으로 지정
 
 ## Contribution
-Feel free to contribute any kind of function or enhancement, here the coding style follows PEP8
-
-Code should pass the [Flake8](http://flake8.pycqa.org/en/latest/) check before committing.
+- 함수 추가 및 활용 자유롭게 가능하며 PEP8 coding style 따름
+- Code는 commit하기 전에 [Flake8](http://flake8.pycqa.org/en/latest/) 검사 패스해야 함
 
 ## TODOs
 
-- [ ] Multiple optimizers
+- [ ] Multiple optimizers (다중 옵티마이저)
 - [ ] Support more tensorboard functions
-- [x] Using fixed random seed
-- [x] Support pytorch native tensorboard
-- [x] `tensorboardX` logger support
-- [x] Configurable logging layout, checkpoint naming
-- [x] Iteration-based training (instead of epoch-based)
-- [x] Adding command line option for fine-tuning
+- [x] Using fixed random seed (고정된 랜덤 시드 사용)
+- [x] Support pytorch native tensorboard (tnative tensorboard 지원)
+- [x] `tensorboardX` logger support 
+- [x] Configurable logging layout, checkpoint naming 
+- [x] Iteration-based training (instead of epoch-based) (epoch기반 대신 iteration 기반 학습)
+  - epoch: 전체 데이터셋을 n바퀴
+  	- (예시) epoch 10이다 = 모델이 전체 데이터셋을 10번 학습한다
+  	- (참고) 데이터셋 크기 100, 배치 크기 10이면 1 epoch당 10번 반복(=epoch당 정해지는 반복횟수 step)해서 전체 데이터셋을 1바퀴 돈다.
+ 	 - 이때 epoch이 10이면 이 과정을 10번 하는 것이다.
+  - iter: 단순히 n번 반복, 데이터셋 크기와 관계 없음
+  	- (예시) iter 10이다 = 모델이 10번 반복 학습한다
+  	- (참고) 데이터셋 크기 작으면 그냥 다시 섞어서 계속 학습, 데이터셋 크기 크면 전체 데이터 다 학습 안해도 종료
+- [x] Adding command line option for fine-tuning (fine-tunng 위한 cmd line 옵션 추가)
 
 ## License
 This project is licensed under the MIT License. See  LICENSE for more details
