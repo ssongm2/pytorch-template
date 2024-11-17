@@ -52,43 +52,43 @@ PyTorch deep learning project made easy.
   ```
   pytorch-template/
   │
-  ├── train.py - main script to start training
-  ├── test.py - evaluation of trained model
+  ├── train.py - 학습 시작하는 코드
+  ├── test.py - 모델 평가하는 코드
   │
-  ├── config.json - holds configuration for training
-  ├── parse_config.py - class to handle config file and cli options
+  ├── config.json - 학습 설정 옵션(데이터 경로, 하이퍼파람리터 등)
+  ├── parse_config.py - config.json 파일과 cli 옵션 처리하는 코드
   │
-  ├── new_project.py - initialize new project with template files
+  ├── new_project.py - 새 프로젝트 초기화하는 코드
   │
-  ├── base/ - abstract base classes
-  │   ├── base_data_loader.py
-  │   ├── base_model.py
-  │   └── base_trainer.py
+  ├── base/ - 추상 클래스 (base)
+  │   ├── base_data_loader.py - 1. 데이터 로더
+  │   ├── base_model.py - 2. 모델
+  │   └── base_trainer.py - 3. 학습기
   │
-  ├── data_loader/ - anything about data loading goes here
-  │   └── data_loaders.py
+  ├── data_loader/ - 추상 클래스 (데이터 로드 관련)
+  │   └── data_loaders.py - 1. 데이터 로드 정의
   │
-  ├── data/ - default directory for storing input data
+  ├── data/ - 입력 데이터 저장 경로
   │
-  ├── model/ - models, losses, and metrics
-  │   ├── model.py
-  │   ├── metric.py
-  │   └── loss.py
+  ├── model/ - 추상 클래스 (모델)
+  │   ├── model.py - 1. 모델 정의
+  │   ├── metric.py - 2. 평가 지표 정의
+  │   └── loss.py - 3. 손실 함수 정의
   │
-  ├── saved/
-  │   ├── models/ - trained models are saved here
-  │   └── log/ - default logdir for tensorboard and logging output
+  ├── saved/ - 추상 클래스 (저장)
+  │   ├── models/ - 1. 학습된 모델
+  │   └── log/ - 2. 학습 과정 담은 로그 경로 (tensorboard, logging output)
   │
-  ├── trainer/ - trainers
-  │   └── trainer.py
+  ├── trainer/ - 추상 클래스 (학습)
+  │   └── trainer.py - 1. 학습기
   │
-  ├── logger/ - module for tensorboard visualization and logging
-  │   ├── visualization.py
-  │   ├── logger.py
-  │   └── logger_config.json
+  ├── logger/ - 추상 클래스 (로그, tensorboard 시각화, logging)
+  │   ├── visualization.py - 1. 시각화
+  │   ├── logger.py - 2. 로그
+  │   └── logger_config.json - 3. 로그 설정 파일
   │  
-  └── utils/ - small utility functions
-      ├── util.py
+  └── utils/ - 추상 클래스 (유틸리티)
+      ├── util.py - 1. 유틸리티 함수
       └── ...
   ```
 
