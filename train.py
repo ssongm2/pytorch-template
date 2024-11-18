@@ -56,19 +56,25 @@ def main(config):
 
 #argparse로 cmd창에서 파라미터 수정 가능
 if __name__ == '__main__':
-    args = argparse.ArgumentParser(description='PyTorch Template') #객체 생성
+    #argparse.ArgumentParser는 명령어로 파라미터 입력받을 때 사용, -c, -r, -d는 config, resume, device를 줄여 저렇게 호출하겠다는 의미
+    args = argparse.ArgumentParser(description='PyTorch Template') #파서 객체 생성
+    #add_argument(): 명령줄에서 사용할 옵션과 기본값 정의
     args.add_argument('-c', '--config', default=None, type=str,
-                      help='config file path (default: None)') #config 파일 경로 지정
+                      help='config file path (default: None)') #구성 파일의 경로 지정
     args.add_argument('-r', '--resume', default=None, type=str,
-                      help='path to latest checkpoint (default: None)') #checkpoint 경로 지정
+                      help='path to latest checkpoint (default: None)') #저장된 최신 checkpoint 경로 지정
     args.add_argument('-d', '--device', default=None, type=str,
-                      help='indices of GPUs to enable (default: all)') #GPU 사용 가능 여부 지정
+                      help='indices of GPUs to enable (default: all)') #사용할 GPU 인덱스 지정
 
-    # custom cli options to modify configuration from default values given in json file.
+    #custom cli는 json에 쓴 디폴트값을 명령어로 수정할 때 사용
+    #cli: command line interface, 터미널에서 명령어 입력해서 실행 or 설정 조작, 텍스트 입력으로 소통하는 방식
+
+    #cli 옵션 지정, 지정 방법: namedtuple이라는 데이터 구조로 flags, type, target 세 가지 속성 지닌 구조체 생성
+    #flags: --lr같은 값, type: data type, target: flag가 수정할 키 경로
     CustomArgs = collections.namedtuple('CustomArgs', 'flags type target')
     options = [
-        CustomArgs(['--lr', '--learning_rate'], type=float, target='optimizer;args;lr'),
-        CustomArgs(['--bs', '--batch_size'], type=int, target='data_loader;args;batch_size')
+        CustomArgs(['--lr', '--learning_rate'], type=float, target='optimizer;args;lr'), #--lr, --learning_rate로 학습률 설정, float type일 것, config file의 optimizer.args.lr 부분 수정
+        CustomArgs(['--bs', '--batch_size'], type=int, target='data_loader;args;batch_size') #--bs, --batch_size로 배치크기 설정, int type일 것, config file의 data_loader.args.batch_size 부분 수정
     ]
-    config = ConfigParser.from_args(args, options)
-    main(config)
+    config = ConfigParser.from_args(args, options) #config file과 수정된 부분 덮어써서 최종 세팅 config 객체 생성
+    main(config) #위에서 생성한 객체 main에 전달해서 실행
