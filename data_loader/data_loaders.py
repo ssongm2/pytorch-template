@@ -10,7 +10,7 @@ class MnistDataLoader(BaseDataLoader): #BaseDataLoader 상속받아서 MNIST 데
         #data_dir: MNIST 데이터셋 저장할 경로, batch_size: 한번에 로드할 샘플 개수, num_workers: 병렬 프로세스 수(기본 1), training: 학습이면 True, 테스트면 False
         trsfm = transforms.Compose([ #여러 변환 순차적으로 적용
             transforms.ToTensor(), #텐서로 변환 (0~1 사이로 정규화)
-            transforms.Normalize((0.1307,), (0.3081,)) #평균 0.1307, 표준편차 0.3081로 데이터 젖ㅇ규화
+            transforms.Normalize((0.1307,), (0.3081,)) #평균 0.1307, 표준편차 0.3081로 데이터 정규화
         ])
         self.data_dir = data_dir #데이터셋 저장할 경로
         self.dataset = datasets.MNIST(self.data_dir, train=training, download=True, transform=trsfm) #torchvision에서 제공하는 MNIST 데이터셋 로드
