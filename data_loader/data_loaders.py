@@ -20,7 +20,7 @@ class MnistDataLoader(BaseDataLoader): #BaseDataLoader 상속받아서 MNIST 데
         #super().__init__(): 부모 클래스(BaseDataLoader) 생성자 호출, BaseDataLoader에서 정의된 data load 관련 기본 설정 초기화
         #데이터셋, 사용자 설정 값을 부모 클래스에 전달
 
-#요약
+#<요약>
 #1. MNIST 데이터셋 로드
 #2. BaseDataLoader 초기화
 #3. 데이터 로더 생성
