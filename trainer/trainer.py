@@ -121,12 +121,13 @@ class Trainer(BaseTrainer): #학습을 관리하는 역할하는 클래스, Base
                 #tensor를 histogram으로 기록해 TensorBoard에 표시, name: 파라미터 이름, p: 파라미터 텐서 bins='auto': 구간 개수 자동으로 설정
         return self.valid_metrics.result() #검증의 모든 metric 최종 결과 반환
 
+    #현재 진행 상태를 계산
     def _progress(self, batch_idx):
-        base = '[{}/{} ({:.0f}%)]'
-        if hasattr(self.data_loader, 'n_samples'):
-            current = batch_idx * self.data_loader.batch_size
-            total = self.data_loader.n_samples
-        else:
-            current = batch_idx
-            total = self.len_epoch
-        return base.format(current, total, 100.0 * current / total)
+        base = '[{}/{} ({:.0f}%)]' #양식
+        if hasattr(self.data_loader, 'n_samples'): #data_loader 객체에 n_samples 속성이 있다면,
+            current = batch_idx * self.data_loader.batch_size #지금까지 처리된 데이터 샘플 개수(배치 idx * batch_Size)
+            total = self.data_loader.n_samples #전체 샘플 개수
+        else: #n_samples 속성 없다면,
+            current = batch_idx #현재 배치 idx
+            total = self.len_epoch #한 epoch에서 처리할 전체 배치 개수 (len_epoch)
+        return base.format(current, total, 100.0 * current / total) (현재진행, 총 데이터 개수, 몇% 진행)
