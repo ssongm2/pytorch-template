@@ -87,7 +87,8 @@ class ConfigParser:
         return cls(config, resume, modification)
             #configParser 클래스 사용해서 config, 새로 시작한 checkpoint(fine-tuning), 수정 사항 전달
 
-    def init_obj(self, name, module, *args, **kwargs):
+    #config file의 클래스나 함수 객체 생성하여 초기화
+    def init_obj(self, name, module, *args, **kwargs): 
         """
         Finds a function handle with the name given as 'type' in config, and returns the
         instance initialized with corresponding arguments given.
@@ -96,11 +97,12 @@ class ConfigParser:
         is equivalent to
         `object = module.name(a, b=1)`
         """
-        module_name = self[name]['type']
-        module_args = dict(self[name]['args'])
+        module_name = self[name]['type'] #config file의 'type' 항목에서 클래스 이름 가져오기
+        module_args = dict(self[name]['args']) #'args'항목에서 인자 가져오기(파라미터)
         assert all([k not in module_args for k in kwargs]), 'Overwriting kwargs given in config file is not allowed'
-        module_args.update(kwargs)
-        return getattr(module, module_name)(*args, **module_args)
+            #module_args의 키와 kwargs 키가 중복되지 않는지 확인. module_args: config에서 제공된 매개변수, kwargs: 추가로 전달된 인자. 따라서 같은 키 있으면 겹치니까 안돼.
+        module_args.update(kwargs) #kwargs값을 module_args에 병합해 최종 사용 인자 완성
+        return getattr(module, module_name)(*args, **module_args) #module에서 이름이 module_name(ex. Adam)인 객체 가져옴
 
     def init_ftn(self, name, module, *args, **kwargs):
         """
