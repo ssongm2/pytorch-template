@@ -163,11 +163,11 @@ def _get_opt_name(flags): #cli flags에서 옵션 이름만 추출 (cli flags: -
             return flg.replace('--', '') #-- 제거하고 키워드만 반환
     return flags[0].replace('--', '') #cli flag가 --로 시작하지 않으면, 첫번째 flag에서 --제거(--learning rate는 위에서 걸러지지만, -lr 같이 짧은 형식은 여기서 걸러줌)
 
-def _set_by_path(tree, keys, value): #
+def _set_by_path(tree, keys, value): #중첩 딕셔너리를 동적으로 따라가서 key값 설정하는 역할, key-key-key-value가 몇개로 구성되어 있던 다 쫓아가서 key:key:key:value구조에서 value를 설정 가능
     """Set a value in a nested object in tree by sequence of keys."""
-    keys = keys.split(';')
-    _get_by_path(tree, keys[:-1])[keys[-1]] = value
+    keys = keys.split(';') #key 경로 문자열을 ;로 나눠 리스트로 변환
+    _get_by_path(tree, keys[:-1])[keys[-1]] = value #마지막 키-1 까지 경로 따라가 중첩 딕셔너리 반환
 
-def _get_by_path(tree, keys):
+def _get_by_path(tree, keys): #중첩 딕셔너리 쫓아가서 value값 반환하는 역할
     """Access a nested object in tree by sequence of keys."""
-    return reduce(getitem, keys, tree)
+    return reduce(getitem, keys, tree) #reduce는 연속적으로 연산 적용하는 함수, key-key-key-value 구성 계속 따라가서 value반환
