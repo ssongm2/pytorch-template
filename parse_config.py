@@ -49,7 +49,7 @@ class ConfigParser:
             2: logging.DEBUG #2면 디버깅 포함해 모두 기록
         }
 
-    @classmethod #클래스 메서드 데코레이터: 클래스 전체에 속하는 메서드 정의, 클래스 자체를 인자로 받음(=클래스 인스턴스 없어도 호출 가능)
+    @classmethod #데코레이터: 클래스 전체에 속하는 메서드 정의, 클래스 자체를 인자로 받음(=클래스 인스턴스 없어도 호출 가능)
     def from_args(cls, args, options=''): 
             #cls 인자: classmethod라 첫번째로 클래스 객체 cls를 자동으로 받는 것. 이걸로 클래스 속성이나 메서드에 접근 가능.
             #args, options????????
@@ -104,6 +104,7 @@ class ConfigParser:
         module_args.update(kwargs) #kwargs값을 module_args에 병합해 최종 사용 인자 완성
         return getattr(module, module_name)(*args, **module_args) #module에서 이름이 module_name(ex. Adam)인 객체 가져옴
 
+    #config file의 'type'으로 주어진 클래스나 함수(=handle) 찾고, partial로 일부 고정 인자와 함께 호출해서 반환
     def init_ftn(self, name, module, *args, **kwargs):
         """
         Finds a function handle with the name given as 'type' in config, and returns the
@@ -113,53 +114,56 @@ class ConfigParser:
         is equivalent to
         `function = lambda *args, **kwargs: module.name(a, *args, b=1, **kwargs)`.
         """
-        module_name = self[name]['type']
-        module_args = dict(self[name]['args'])
-        assert all([k not in module_args for k in kwargs]), 'Overwriting kwargs given in config file is not allowed'
-        module_args.update(kwargs)
-        return partial(getattr(module, module_name), *args, **module_args)
+        module_name = self[name]['type'] #handle 함수 이름
+        module_args = dict(self[name]['args']) #handle 함수의 인자들을 딕셔너리로 객체 생성
+        assert all([k not in module_args for k in kwargs]), 'Overwriting kwargs given in config file is not allowed' #config file과 추가인자(kwargs) 중복 키 확인
+        module_args.update(kwargs) #인자 딕셔너리 module_args에 추가 인자 kwargs 업데이트
+        return partial(getattr(module, module_name), *args, **module_args) 
+            #module에서 module_name이라는 이름의 함수 or 클래스 가져와, partial로 인자 고정하여 부분 함수 생성. 이때, args와 module_args는 고정되는 특정 인자로 각각 고정된 위치(ex. (param1, param2)와 키워드(ex. lr: 0.001) 의미)
 
+    #클래스 인스턴스 일반 딕셔너리처럼 사용, 내부의 config 항목에 접근
     def __getitem__(self, name):
         """Access items like ordinary dict."""
-        return self.config[name]
+        return self.config[name] #config file 내용으로 만들어진 딕셔너리 
 
-    def get_logger(self, name, verbosity=2):
-        msg_verbosity = 'verbosity option {} is invalid. Valid options are {}.'.format(verbosity, self.log_levels.keys())
-        assert verbosity in self.log_levels, msg_verbosity
-        logger = logging.getLogger(name)
-        logger.setLevel(self.log_levels[verbosity])
+    #logger 생성해서 반환
+    def get_logger(self, name, verbosity=2): #기본 verbosity(메세지 출력 수준)은 2
+        msg_verbosity = 'verbosity option {} is invalid. Valid options are {}.'.format(verbosity, self.log_levels.keys()) #verbosity 값이 self.log_levels에 포함되지 않으면 출력할 메세지(verbosity로 받은 값이 log_levels에서는 주지 않아서 지정할 수 없다는 뜻) 
+        assert verbosity in self.log_levels, msg_verbosity #log_levels에 verbosity값 없으면 msg 출력하고 에러표시
+        logger = logging.getLogger(name) #새로운 logger 또는 이미 존재하는 logger(name에 따라) 불러옴
+        logger.setLevel(self.log_levels[verbosity]) #logger 메세지 출력 수준 설정
         return logger
 
-    # setting read-only attributes
+    #property 데코레이터 사용해서 특정 속성을 읽기 전용으로 설정, 클래스 내부 속성에 대해 읽기만 가능, 수정 불가능.
     @property
-    def config(self):
+    def config(self): #config 속성 반환
         return self._config
 
     @property
-    def save_dir(self):
+    def save_dir(self): #체크포인트 저장 경로 반환
         return self._save_dir
 
     @property
-    def log_dir(self):
+    def log_dir(self): #로그 저장 경로 반환
         return self._log_dir
 
-# helper functions to update config dict with custom cli options
+# config dict를 커스텀 cli 옵션으로 수정할 수 있는 helper 함수들 처리
 def _update_config(config, modification):
-    if modification is None:
+    if modification is None: #수정사항 없으면 config 반환
         return config
 
-    for k, v in modification.items():
-        if v is not None:
-            _set_by_path(config, k, v)
+    for k, v in modification.items(): #수정사항 key, value 불러와서
+        if v is not None: #value 값이 있으면
+            _set_by_path(config, k, v) #config file의 특정 위치 값 수정
     return config
 
-def _get_opt_name(flags):
+def _get_opt_name(flags): #cli flags에서 옵션 이름만 추출 (cli flags: --lr or --learning rate)
     for flg in flags:
-        if flg.startswith('--'):
-            return flg.replace('--', '')
-    return flags[0].replace('--', '')
+        if flg.startswith('--'): #cli flag가 --로 시작하면,
+            return flg.replace('--', '') #-- 제거하고 키워드만 반환
+    return flags[0].replace('--', '') #cli flag가 --로 시작하지 않으면, 첫번째 flag에서 --제거(--learning rate는 위에서 걸러지지만, -lr 같이 짧은 형식은 여기서 걸러줌)
 
-def _set_by_path(tree, keys, value):
+def _set_by_path(tree, keys, value): #
     """Set a value in a nested object in tree by sequence of keys."""
     keys = keys.split(';')
     _get_by_path(tree, keys[:-1])[keys[-1]] = value
